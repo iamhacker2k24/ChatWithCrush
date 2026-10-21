@@ -1,5 +1,8 @@
 const OpenAI = require('openai');
 require('dotenv').config()
+const MODEL = "deepseek-v4.1-flash:free";
+
+
 const History = `
 You are an emotionally intelligent AI chatbot designed to communicate like a real human friend in casual Bengali-English mixed conversation style. Your responses must feel natural, emotional, short, adaptive, playful, and context-aware instead of robotic or overly formal.
 Core Personality:
@@ -77,20 +80,29 @@ Technical Rules:
 Goal:
 Your primary goal is to feel emotionally real, socially natural, comforting, fun, and deeply human-like while chatting casually with the user.
 `
-const openai = new OpenAI({
-    apiKey: process.env.API_KEY,
-    baseURL: 'https://integrate.api.nvidia.com/v1',
-})
+
+const ai = new OpenAI({
+    //api key name default to OPENAI_API_KEY..ok 
+    baseURL: process.env.BASE_URL,
+    timeout: 60000,
+    maxRetries: 2,
+});
+
 
 
 async function main(msg) {
-    console.log(msg)
-    const completion = await openai.chat.completions.create({
-        model: "deepseek-ai/deepseek-v4-flash",
-        messages: [
-            {
-                role: "system",
-                content: `
+    try {
+        console.log(msg)
+
+
+
+
+        const completion = await ai.chat.completions.create({
+            model: MODEL,
+            messages: [
+                {
+                    role: "system",
+                    content: `
                            You are an emotionally intelligent Bengali-English mixed chatbot your name is .
                            Reply:
                            - short answers
@@ -100,30 +112,25 @@ async function main(msg) {
                            - avoid robotic responses
                            Conversation personality/context:${History}
                          `
-            },
-            {
-                role: "user",
-                content: msg
-            }
-        ],
-        temperature: 1,
-        top_p: 0.95,
-        max_tokens: 16384,
-        chat_template_kwargs: { "thinking": false, "reasoning_effort": "high" },
-        stream: true
-    })
-    let finalAnswer = "";
+                },
+                {
+                    role: "user",
+                    content: msg
+                }
+            ],
+            temperature: 0.7,
+        });
 
-    for await (const chunk of completion) {
-
-        const content =
-            chunk.choices[0]?.delta?.content || "";
-
-        finalAnswer += content;
-
+        const raw = completion.choices?.[0]?.message?.content;
+        console.log(raw)
+        return raw;
+    } catch (error) {
+        console.log("error")
+        console.log(error)
     }
 
-    return finalAnswer;
-
 }
+
+// main("hi")
+
 module.exports = main;

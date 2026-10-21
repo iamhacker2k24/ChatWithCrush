@@ -1,12 +1,16 @@
+require('dotenv').config()
 const express = require("express");
 const main = require("./Ai");
 const app = express();
 app.use(express.json());
-require('dotenv').config()
 const cors = require("cors");
+
+// app.use(cors())
 app.use(cors({
-    origin: process.env.ORIGIN
+    origin: `${process.env.ORIGIN}`
 }));
+
+console.log()
 
 app.post("/api/chat", async (req, res) => {
     try {
